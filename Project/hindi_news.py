@@ -1,21 +1,11 @@
-from bs4 import BeautifulSoup
-import utility 
-
-def getSoup(url):
-  data = utility.getHTML(url)
-  
-  soup = BeautifulSoup(data, 'html.parser')
-  return soup
-  
-def getTitle(soup):
-  text = soup.find("title")
-  return text.text
+from utility import NewsScraper 
 
 def main():
-  url = "https://www.bhaskar.com/international/news/pakistan-saudi-arabia-loan-shahbaz-sharif-video-goes-viral-130834381.html"
-  soup = getSoup(url)
+  baseUrl = "https://www.bhaskar.com"
+  scraper = NewsScraper(baseUrl)
   
-  print(getTitle(soup))
+  print(scraper.getTitle())
+  [print(s) for s in scraper.crawlSoups()]
   
 if __name__ == "__main__":
   main()
