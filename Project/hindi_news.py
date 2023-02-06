@@ -1,7 +1,7 @@
 from utility import NewsScraper 
 
 def main():
-  baseUrl = "https://www.bhaskar.com"
+  baseUrl = "https://www.aajtak.in" # "https://www.bhaskar.com"
   scraper = NewsScraper(baseUrl)
   
   print(scraper.getTitle())

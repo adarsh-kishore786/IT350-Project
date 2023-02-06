@@ -18,6 +18,7 @@ class NewsScraper:
 
   def getHeadingsWithLinks(self):
     data = self.getDataByTag("a")
+    data = list(filter(lambda d: "href" in d.attrs, data))
     return { d.text : (self.baseUrl if not d["href"].startswith("http") else "") + d["href"] for d in data }
   
   def _getHTML(self, url):
@@ -37,7 +38,9 @@ class NewsScraper:
     for (title, link) in titlesAndLinks.items():
       try:
         baseUrl, url = self._separateDomain(link)
-        print(baseUrl, url)
+        if baseUrl != self.baseUrl:
+          continue
+        # print(baseUrl, url)
         res.append(NewsScraper(baseUrl, url))
       except:
         continue
