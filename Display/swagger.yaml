@@ -1,0 +1,21 @@
+# swagger.yml
+
+openapi: 3.0.0
+info:
+  title: "RP Flask REST API"
+  description: "An API about newsdata"
+  version: "1.0.0"
+
+servers:
+  - url: "/api"
+
+paths:
+  /headlines:
+    get:
+      operationId: "app.read_headlines"
+      tags:
+        - "Headlines"
+      summary: "Display the headlines"
+      responses:
+        "200":
+          description: "Successfully displayed headlines"
