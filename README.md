@@ -64,8 +64,16 @@ pip3 install -r requirements.txt
 
 ## Running the application
 
-In root folder, type
+In [Display](Display) folder, type
 
 ```python
 flask run
 ```
+
+If you install new dependencies, run in root folder
+
+```python
+python3 -m pipreqs.pipreqs . --force
+```
+
+This will update `requirements.txt`.
