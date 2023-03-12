@@ -8,6 +8,12 @@ Clone the repository
 git clone git@github.com:adarsh-kishore786/IT350-Project.git
 ```
 
+Switch to new branch
+
+```git
+git checkout -b <your-branch>
+```
+
 Create a new virtual environment.
 
 For Windows CMD,
@@ -33,6 +39,12 @@ pip3 install -r requirements.txt
 ---
 
 ## Otherwise
+
+Switch to *existing* branch
+
+```git
+git checkout <your-branch>
+```
 
 Pull latest repo from `main`
 
