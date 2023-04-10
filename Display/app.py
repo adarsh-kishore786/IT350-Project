@@ -6,6 +6,9 @@ from flask_pymongo import pymongo
 from pymongo import MongoClient
 from utility import NewsScraper
 from datetime import date
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
 MONGO_URI = os.environ.get('MONGO_URI')

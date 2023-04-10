@@ -1,6 +1,30 @@
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
 
+class CommentScraper:
+  def __init__(self, baseUrl, url=""):
+    self.baseUrl = baseUrl
+    self.soup = BeautifulSoup(self._getHTML(url), 'html.parser')
+    
+  def getDataByTag(self, tag):
+    data = self.soup.find_all(tag)
+    return data
+  
+  def getTextByTag(self, tag):
+    return [d.text for d in self.getDataByTag(tag)]
+
+  def getTitle(self):
+    return self.getTextByTag("title")[0]
+  
+  def _getHTML(self, url):
+    data = urlopen(self.baseUrl + url)
+    return data.read().decode()
+  
+  def changeUrl(self, newBaseUrl, newUrl=""):
+    self.baseUrl = newBaseUrl
+    self.soup = BeautifulSoup(self.getHTML(newUrl), 'html.parser')
+    
+
 class NewsScraper:
   def __init__(self, baseUrl, url=""):
     self.baseUrl = baseUrl
