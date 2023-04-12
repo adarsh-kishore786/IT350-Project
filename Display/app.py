@@ -5,36 +5,37 @@ from flask import Flask, jsonify,render_template,url_for, request, make_response
 from flask_pymongo import pymongo
 from pymongo import MongoClient
 from utility import NewsScraper
+from get_json import get_json
 from datetime import date
 from dotenv import load_dotenv
 
 load_dotenv()
 
 app = Flask(__name__)
-MONGO_URI = os.environ.get('MONGO_URI')
-client = pymongo.MongoClient(MONGO_URI)
-app.config['MONGO_URI'] = MONGO_URI
-# mongo = PyMongo(app)
-db = client.get_database("Newsdata")
+# MONGO_URI = os.environ.get('MONGO_URI')
+# client = pymongo.MongoClient(MONGO_URI)
+# app.config['MONGO_URI'] = MONGO_URI
+# # mongo = PyMongo(app)
+# db = client.get_database("Newsdata")
 
-hindi = pymongo.collection.Collection(db,"hindi")
-kannada = pymongo.collection.Collection(db,"kannada")
-telugu = pymongo.collection.Collection(db,"telugu")
+# hindi = pymongo.collection.Collection(db,"hindi")
+# kannada = pymongo.collection.Collection(db,"kannada")
+# telugu = pymongo.collection.Collection(db,"telugu")
 
-today = date.today()
-# current_time = datetime.datetime.now()
-# hour = current_time.hour
+# today = date.today()
+# # current_time = datetime.datetime.now()
+# # hour = current_time.hour
 
-@app.route("/add_news",methods=['POST','GET'])
-def add_news():
-    hindiHeadlines = hindiScraper.getHeadingsWithLinks()
-    kannadaHeadlines = kannadaScraper.getHeadingsWithLinks()
-    teluguHeadlines = teluguScraper.getHeadingsWithLinks()
-    if request.method == 'GET':
-        db.hindi.insert_one({today.strftime('%m/%d/%Y'): hindiHeadlines})
-        db.kannada.insert_one({today.strftime('%m/%d/%Y'): kannadaHeadlines})
-        db.telugu.insert_one({today.strftime('%m/%d/%Y'): teluguHeadlines})
-        return jsonify(message="success")
+# @app.route("/add_news",methods=['POST','GET'])
+# def add_news():
+#     hindiHeadlines = hindiScraper.getHeadingsWithLinks()
+#     kannadaHeadlines = kannadaScraper.getHeadingsWithLinks()
+#     teluguHeadlines = teluguScraper.getHeadingsWithLinks()
+#     if request.method == 'GET':
+#         db.hindi.insert_one({today.strftime('%m/%d/%Y'): hindiHeadlines})
+#         db.kannada.insert_one({today.strftime('%m/%d/%Y'): kannadaHeadlines})
+#         db.telugu.insert_one({today.strftime('%m/%d/%Y'): teluguHeadlines})
+#         return jsonify(message="success")
 
 
 baseUrl = "https://www.aajtak.in" # "https://www.bhaskar.com"
@@ -50,7 +51,6 @@ title = scraper.getTitle()
 
 @app.route("/",methods=['POST','GET'])
 def index():
-    title = scraper.getTitle()
     # headings = scraper.getHeadingsWithLinks()
     if request.method == 'GET':
         # return jsonify(title)
@@ -62,10 +62,20 @@ def index():
 def read_headlines():
     headlines = scraper.getHeadingsWithLinks()
     if request.method == 'GET':
-        return jsonify(headlines)
-    
+        return jsonify(headlines) 
     else:
         return "Error"
+
+@app.route('/<lang>/news', methods=['GET'])
+def get_json_data(lang:str):
+    urls = [
+        "https://www.aajtak.in/elections/karnataka-assembly-election-2023/story/karnataka-election-bjp-candidate-ex-bbmp-commissioner-anil-kumar-koratagere-constituency-ntc-1673020-2023-04-12",
+        "https://www.aajtak.in/elections/karnataka-assembly-election-2023/story/karnataka-election-ks-eshwarappa-quit-election-politics-bjp-ntc-1672461-2023-04-11"
+    ]
+    data = []
+    for url in urls:
+        data.append(get_json(url, lang))
+    return data
 
 if __name__ == "__main__":
     app.run(debug=True)
