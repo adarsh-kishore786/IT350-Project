@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import json 
 
 def get_json(url, lang):
+  print(url)
   data = urlopen(url).read().decode()
   soup = BeautifulSoup(data, 'html.parser')
 

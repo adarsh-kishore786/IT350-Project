@@ -38,10 +38,32 @@ app = Flask(__name__)
 #         return jsonify(message="success")
 
 
-baseUrl = "https://www.aajtak.in" # "https://www.bhaskar.com"
-# baseUrl = "https://www.kannadaprabha.com"
-# baseUrl = "https://www.eenadu.net"
-scraper = NewsScraper(baseUrl)
+hindi_base_url = "https://www.aajtak.in" # "https://www.bhaskar.com"
+kaanda_base_url = "https://www.kannadaprabha.com"
+telugu_base_url = "https://www.eenadu.net"
+
+base_urls = { "hindi": hindi_base_url, "kannada": kaanda_base_url, "telugu": telugu_base_url}
+
+hindi_urls = \
+    [
+        "/elections/karnataka-assembly-election-2023/story/karnataka-election-bjp-candidate-ex-bbmp-commissioner-anil-kumar-koratagere-constituency-ntc-1673020-2023-04-12",
+        "/elections/karnataka-assembly-election-2023/story/karnataka-election-ks-eshwarappa-quit-election-politics-bjp-ntc-1672461-2023-04-11"
+    ]
+    
+kannada_urls = \
+    [
+        "/nation/2023/apr/12/fir-against-union-minister-arjun-munda-and-40-others-over-protest-in-ranchi-491543.html",
+        "/nation/2023/apr/12/chinese-buildup-close-to-doklam-plateau-a-grave-security-threat-congress-491552.html"
+    ]
+telugu_urls = \
+    [
+        "/telugu-news/movies/samantha-suffers-with-fever/0210/123066515",
+        "/telugu-news/crime/im-reduced-to-dust-spare-my-family-pleads-gangster-politician-atiq-ahmad/0300/123066566"
+    ]
+
+urls = { "hindi": hindi_urls, "kannada": kannada_urls, "telugu": telugu_urls }
+
+scraper = NewsScraper(base_urls["hindi"])
 
 hindiUrl, hindiScraper = "https://www.aajtak.in", NewsScraper("https://www.aajtak.in")
 kannadaUrl, kannadaScraper = "https://www.kannadaprabha.com", NewsScraper("https://www.kannadaprabha.com")
@@ -51,9 +73,7 @@ title = scraper.getTitle()
 
 @app.route("/",methods=['POST','GET'])
 def index():
-    # headings = scraper.getHeadingsWithLinks()
     if request.method == 'GET':
-        # return jsonify(title)
         return render_template('index.html',**locals())
     else:
         return "Hello"
@@ -68,13 +88,9 @@ def read_headlines():
 
 @app.route('/<lang>/news', methods=['GET'])
 def get_json_data(lang:str):
-    urls = [
-        "https://www.aajtak.in/elections/karnataka-assembly-election-2023/story/karnataka-election-bjp-candidate-ex-bbmp-commissioner-anil-kumar-koratagere-constituency-ntc-1673020-2023-04-12",
-        "https://www.aajtak.in/elections/karnataka-assembly-election-2023/story/karnataka-election-ks-eshwarappa-quit-election-politics-bjp-ntc-1672461-2023-04-11"
-    ]
     data = []
-    for url in urls:
-        data.append(get_json(url, lang))
+    for url in urls[lang]:
+        data.append(get_json(base_urls[lang] + url, lang))
     return data
 
 if __name__ == "__main__":
