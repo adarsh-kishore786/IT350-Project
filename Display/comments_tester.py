@@ -20,12 +20,13 @@ def get_comments(url):
 
 def main():
   comments = get_comments("p/Cqzy-IOrTyD")
+  
   # scraper = CommentScraper(baseUrl, url)
   # print(scraper.soup.find("title"))
   
-  for c in comments:
-    print(vars(c)["text"])
-    print()
+  # for c in comments:
+  #   print(vars(c)["text"])
+  #   print()
 
 if __name__ == "__main__":
   main()
