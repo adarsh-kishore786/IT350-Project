@@ -18,7 +18,7 @@ class NewsScraper:
 
   def getHeadingsWithLinks(self):
     data = self.getDataByTag("a")
-    data = list(filter(lambda d: "href" in d.attrs, data))
+    data = list(filter(lambda d: "href" in d.attrs and self.baseUrl in d["href"], data))
     return { d.text : (self.baseUrl if not d["href"].startswith("http") else "") + d["href"] for d in data }
   
   def _getHTML(self, url):
@@ -35,9 +35,11 @@ class NewsScraper:
   def crawlSoups(self):
     titlesAndLinks = self.getHeadingsWithLinks()
     res = []
-    for (title, link) in titlesAndLinks.items():
+    for (_, link) in titlesAndLinks.items():
       try:
         baseUrl, url = self._separateDomain(link)
+        if '/' in url[1:]:
+          continue 
         if baseUrl != self.baseUrl:
           continue
         print(baseUrl, url)
