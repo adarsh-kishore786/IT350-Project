@@ -23,10 +23,10 @@ from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 load_dotenv()
 
 app = Flask(__name__)
-MONGO_URI = os.environ.get('MONGO_URI')
-client = pymongo.MongoClient(MONGO_URI)
-app.config['MONGO_URI'] = MONGO_URI
-db = client.get_database("Newsdata")
+# MONGO_URI = os.environ.get('MONGO_URI')
+# client = pymongo.MongoClient(MONGO_URI)
+# app.config['MONGO_URI'] = MONGO_URI
+# db = client.get_database("Newsdata")
 
 # hindi = pymongo.collection.Collection(db,"hindi")
 # kannada = pymongo.collection.Collection(db,"kannada")
@@ -50,11 +50,11 @@ db = client.get_database("Newsdata")
 trans = []
 date = '04/11/2023'
 
-hindi_comments = db.hindi_comments.find_one({})["comments"]
+# hindi_comments = db.hindi_comments.find_one({})["comments"]
 # comments = hindi_comments.comments
 # print(comments)
-for com in hindi_comments:
-    trans.append(com)
+# for com in hindi_comments:
+#     trans.append(com)
     # print(com)
 
 # trans = ["हद्द है यार , अब सब काम भी प्रधानमंत्री जी को करना पड रहा है... सरकारी तंत्र क्या कर रहा है। 😀 😂","🙏🏻","Pm Desh chala rahe hai ki jangal me nokari pa Gaye hai jai bhim jai sambidhan","😂😂 animal Jan sankhya kaanon bnao 😂 q badh rhi population cantrol karne bolo 😂","@kuldeepyuvraj berozgari bhukhmari ginna nahin aata Q ki anpad h 😂modi😂😂😂","Media ka to blo mt Pakistan or afghanistan se bhi gya guzra hua hai","Bhukmari me top pe","Sarso tel k blo","Diesel k blo","Petrol k daam blo","Gas k daam blo","अरे अंदभगत बेरोजगारी की संख्या पर भी ध्यान दे ले चुतिया 😂","ये तो ठीक है पर ये बाघों के फोटो की जगह मोदी जी क्यू लगा रखा बाघों की संख्या बड़ी ना","Sir aap Yogi ji ko gin na bhul gaye sayad😂😂😂","आप अपनी डिग्री दिखावे बस","Ab Insan ki kimat janvaron se kam ho gai isliye rojgar per Dhyan Nahin dete","Rojgar per Dhyan Nahin janvaron ko per Dhyan dete Ho","Andhbhakto me bhi teji ankde badte ja rahe  h Modiji","Entire political science 😂😂😂","Farzi degree"]
@@ -122,16 +122,16 @@ teluguUrl, teluguScraper = "https://www.eenadu.net", NewsScraper("https://www.ee
 
 title = scraper.getTitle()
 
-@app.route("/add_comments",methods=['POST','GET'])
-def add_comments():
-    hindi_comments = []
-    hindi_com = get_comments("p/Cqzy-IOrTyD")
-    for c in hindi_com:
-        # print(vars(c)["text"])
-        hindi_comments.append(vars(c)["text"])
-    if request.method == 'GET':
-        db.hindi_comments.insert_one({"comments": hindi_comments})
-        return jsonify(message="success")
+# @app.route("/add_comments",methods=['POST','GET'])
+# def add_comments():
+#     hindi_comments = []
+#     hindi_com = get_comments("p/Cqzy-IOrTyD")
+#     for c in hindi_com:
+#         # print(vars(c)["text"])
+#         hindi_comments.append(vars(c)["text"])
+#     if request.method == 'GET':
+#         db.hindi_comments.insert_one({"comments": hindi_comments})
+#         return jsonify(message="success")
 
 
 def get_comments(url):
