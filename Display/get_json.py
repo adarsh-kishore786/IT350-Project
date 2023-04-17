@@ -76,13 +76,35 @@ def get_telugu_content(json_data, soup):
 
   return json_data
 
+def get_tamil_content(json_data, soup):
+  content = soup.find_all("div", {"id": "shortdiv"})[0].text
+  content = re.sub(r"\n+", "\n", content)
+  content = re.sub(" +", " ", content)
+  # json_data["content"] = content
+  # return json_data
+  # sentenceList = sent_tokenize(content)
+  # eng_inp = ""
+  # # print(sentenceList)
+  # for sentence in sentenceList:
+  #    tamil_text = transliterate(sentence, sanscript.ITRANS, sanscript.TAMIL)
+  #    sent_eng = GoogleTranslator(source='auto', target='en').translate(tamil_text)
+  #   #  print(sent_eng)
+  #    eng_inp+=sent_eng
+  # eng_summary = get_summary(eng_inp, 0.1)
+
+  # tamil_summary = GoogleTranslator(source='auto', target='ta').translate(eng_summary)
+  json_data["summary"] = content
+
+  return json_data
+
 def get_json(url, lang):
   data = urlopen(url).read().decode()
   soup = BeautifulSoup(data, 'html.parser')
 
   json_data = {'source': url, 'language': lang}
   json_data["title"] = soup.find('title').text
-  json_data["image_links"] = list(map(lambda i: i["src"], soup.find_all('img')))
+  if lang != "tamil":
+    json_data["image_links"] = list(map(lambda i: i["src"], soup.find_all('img')))
     
   if lang == "hindi":
     json_data = get_hindi_content(json_data, soup)
@@ -90,6 +112,8 @@ def get_json(url, lang):
     json_data = get_kannanda_content(json_data, soup)
   if lang == "telugu":
     json_data = get_telugu_content(json_data, soup)
+  if lang == "tamil":
+    json_data = get_tamil_content(json_data, soup)
     
   return json_data
 
