@@ -23,66 +23,54 @@ from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 load_dotenv()
 
 app = Flask(__name__)
-# MONGO_URI = os.environ.get('MONGO_URI')
-# client = pymongo.MongoClient(MONGO_URI)
-# app.config['MONGO_URI'] = MONGO_URI
-# db = client.get_database("Newsdata")
+MONGO_URI = os.environ.get('MONGO_URI')
+client = pymongo.MongoClient(MONGO_URI)
+app.config['MONGO_URI'] = MONGO_URI
+db = client.get_database("Newsdata")
 
-# hindi = pymongo.collection.Collection(db,"hindi")
-# kannada = pymongo.collection.Collection(db,"kannada")
-# telugu = pymongo.collection.Collection(db,"telugu")
+hindi = pymongo.collection.Collection(db,"hindi")
+kannada = pymongo.collection.Collection(db,"kannada")
+telugu = pymongo.collection.Collection(db,"telugu")
 
-# today = date.today()
-# # current_time = datetime.datetime.now()
-# # hour = current_time.hour
-
-# @app.route("/add_news",methods=['POST','GET'])
-# def add_news():
-#     hindiHeadlines = hindiScraper.getHeadingsWithLinks()
-#     kannadaHeadlines = kannadaScraper.getHeadingsWithLinks()
-#     teluguHeadlines = teluguScraper.getHeadingsWithLinks()
-#     if request.method == 'GET':
-#         db.hindi.insert_one({today.strftime('%m/%d/%Y'): hindiHeadlines})
-#         db.kannada.insert_one({today.strftime('%m/%d/%Y'): kannadaHeadlines})
-#         db.telugu.insert_one({today.strftime('%m/%d/%Y'): teluguHeadlines})
-#         return jsonify(message="success")
+today = date.today()
+# current_time = datetime.datetime.now()
+# hour = current_time.hour
 
 trans = []
-# date = '04/11/2023'
+date = '04/11/2023'
 
-# hindi_comments = db.hindi_comments.find_one({})["comments"]
-# for com in hindi_comments:
-#     trans.append(com)
+hindi_comments = db.hindi_comments.find_one({})["comments"]
+for com in hindi_comments:
+    trans.append(com)
 
-# # trans = ["हद्द है यार , अब सब काम भी प्रधानमंत्री जी को करना पड रहा है... सरकारी तंत्र क्या कर रहा है। 😀 😂","🙏🏻","Pm Desh chala rahe hai ki jangal me nokari pa Gaye hai jai bhim jai sambidhan","😂😂 animal Jan sankhya kaanon bnao 😂 q badh rhi population cantrol karne bolo 😂","@kuldeepyuvraj berozgari bhukhmari ginna nahin aata Q ki anpad h 😂modi😂😂😂","Media ka to blo mt Pakistan or afghanistan se bhi gya guzra hua hai","Bhukmari me top pe","Sarso tel k blo","Diesel k blo","Petrol k daam blo","Gas k daam blo","अरे अंदभगत बेरोजगारी की संख्या पर भी ध्यान दे ले चुतिया 😂","ये तो ठीक है पर ये बाघों के फोटो की जगह मोदी जी क्यू लगा रखा बाघों की संख्या बड़ी ना","Sir aap Yogi ji ko gin na bhul gaye sayad😂😂😂","आप अपनी डिग्री दिखावे बस","Ab Insan ki kimat janvaron se kam ho gai isliye rojgar per Dhyan Nahin dete","Rojgar per Dhyan Nahin janvaron ko per Dhyan dete Ho","Andhbhakto me bhi teji ankde badte ja rahe  h Modiji","Entire political science 😂😂😂","Farzi degree"]
-# hindi_text = []
-# senti = []
-# english = []
-# sentiment = []
+hindi_text = []
+senti = []
+english = []
+sentiment = []
 
-# for text in trans:
-#   hindi_text = transliterate(text, sanscript.ITRANS, sanscript.DEVANAGARI)
-#   translated_text = GoogleTranslator(source='auto', target='en').translate(hindi_text)
-#   english.append(translated_text)
+for text in trans:
+  hindi_text = transliterate(text, sanscript.ITRANS, sanscript.DEVANAGARI)
+  translated_text = GoogleTranslator(source='auto', target='en').translate(hindi_text)
+  english.append(translated_text)
 
-# from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
-# analyzer = SentimentIntensityAnalyzer()
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+analyzer = SentimentIntensityAnalyzer()
 
-# eng = [i for i in english if i is not None]
+eng = [i for i in english if i is not None]
 
-# for comment in eng:
-#   sentiment_dict = analyzer.polarity_scores(comment)
-#   if sentiment_dict['compound']<0:
-#     sentiment.append("Negative")
-#   elif sentiment_dict['compound']>0:
-#     sentiment.append("Positive")
-#   else:
-#     sentiment.append("Neutral")
+for comment in eng:
+  sentiment_dict = analyzer.polarity_scores(comment)
+  if sentiment_dict['compound']<0:
+    sentiment.append("Negative")
+  elif sentiment_dict['compound']>0:
+    sentiment.append("Positive")
+  else:
+    sentiment.append("Neutral")
 
-# print(sentiment)
+print(sentiment)
 
 
-hindi_base_url = "https://www.aajtak.in" # "https://www.bhaskar.com"
+hindi_base_url = "https://www.aajtak.in"
 kaanda_base_url = "https://www.kannadaprabha.com"
 telugu_base_url = "https://www.sakshi.com/"
 
@@ -107,24 +95,33 @@ telugu_urls = \
 
 urls = { "hindi": hindi_urls, "kannada": kannada_urls, "telugu": telugu_urls }
 
-scraper = NewsScraper(base_urls["hindi"])
 
-hindiUrl, hindiScraper = "https://www.aajtak.in", NewsScraper("https://www.aajtak.in")
-kannadaUrl, kannadaScraper = "https://www.kannadaprabha.com", NewsScraper("https://www.kannadaprabha.com")
-teluguUrl, teluguScraper = "https://www.sakshi.com/", NewsScraper("https://www.sakshi.com/")
+# Setting Flask routes
+@app.route("/add_news",methods=['POST','GET'])
+def add_news():
+    hindiScraper = NewsScraper(base_urls["hindi"])
+    kannadaScraper = NewsScraper(base_urls["kannada"])
+    teluguScraper = NewsScraper(base_urls["telugu"])
 
-title = scraper.getTitle()
+    hindiHeadlines = hindiScraper.getHeadingsWithLinks()
+    kannadaHeadlines = kannadaScraper.getHeadingsWithLinks()
+    teluguHeadlines = teluguScraper.getHeadingsWithLinks()
+    if request.method == 'GET':
+        db.hindi.insert_one({today.strftime('%m/%d/%Y'): hindiHeadlines})
+        db.kannada.insert_one({today.strftime('%m/%d/%Y'): kannadaHeadlines})
+        db.telugu.insert_one({today.strftime('%m/%d/%Y'): teluguHeadlines})
+        return jsonify(message="success")
 
-# @app.route("/add_comments",methods=['POST','GET'])
-# def add_comments():
-#     hindi_comments = []
-#     hindi_com = get_comments("p/Cqzy-IOrTyD")
-#     for c in hindi_com:
-#         # print(vars(c)["text"])
-#         hindi_comments.append(vars(c)["text"])
-#     if request.method == 'GET':
-#         db.hindi_comments.insert_one({"comments": hindi_comments})
-#         return jsonify(message="success")
+@app.route("/add_comments",methods=['POST','GET'])
+def add_comments():
+    hindi_comments = []
+    hindi_com = get_comments("p/Cqzy-IOrTyD")
+    for c in hindi_com:
+        # print(vars(c)["text"])
+        hindi_comments.append(vars(c)["text"])
+    if request.method == 'GET':
+        db.hindi_comments.insert_one({"comments": hindi_comments})
+        return jsonify(message="success")
 
 
 def get_comments(url):
@@ -141,20 +138,15 @@ def get_comments(url):
   
   return cl.media_comments(media_id, 20)
 
-@app.route("/",methods=['POST','GET'])
+@app.route("/",methods=['GET'])
 def index():
-    if request.method == 'GET':
-        return render_template('index.html',**locals())
-    else:
-        return "Hello"
+    return render_template('index.html',**locals())
 
-@app.route("/headlines", methods=['POST','GET'])
-def read_headlines():
+@app.route("/<lang>/headlines", methods=['GET'])
+def read_headlines(lang):
+    scraper = NewsScraper(base_urls[lang])
     headlines = scraper.getHeadingsWithLinks()
-    if request.method == 'GET':
-        return jsonify(headlines) 
-    else:
-        return "Error"
+    return jsonify(headlines) 
 
 @app.route('/<lang>/news', methods=['GET'])
 def get_json_data(lang:str):
