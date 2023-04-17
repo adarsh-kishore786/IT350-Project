@@ -84,7 +84,7 @@ trans = []
 
 hindi_base_url = "https://www.aajtak.in" # "https://www.bhaskar.com"
 kaanda_base_url = "https://www.kannadaprabha.com"
-telugu_base_url = "https://www.eenadu.net"
+telugu_base_url = "https://www.sakshi.com/"
 
 base_urls = { "hindi": hindi_base_url, "kannada": kaanda_base_url, "telugu": telugu_base_url}
 
@@ -101,8 +101,8 @@ kannada_urls = \
     ]
 telugu_urls = \
     [
-        "/telugu-news/movies/samantha-suffers-with-fever/0210/123066515",
-        "/telugu-news/crime/im-reduced-to-dust-spare-my-family-pleads-gangster-politician-atiq-ahmad/0300/123066566"
+        "/telugu-news/sports/jos-buttler-met-his-lucky-fan-intresting-conversation-viral-gt-vs-rr-1587163",
+        "/telugu-news/andhra-pradesh/ys-avinash-reddy-key-comments-over-bhaskar-reddy-arrest-1587119"
     ]
 
 urls = { "hindi": hindi_urls, "kannada": kannada_urls, "telugu": telugu_urls }
@@ -111,7 +111,7 @@ scraper = NewsScraper(base_urls["hindi"])
 
 hindiUrl, hindiScraper = "https://www.aajtak.in", NewsScraper("https://www.aajtak.in")
 kannadaUrl, kannadaScraper = "https://www.kannadaprabha.com", NewsScraper("https://www.kannadaprabha.com")
-teluguUrl, teluguScraper = "https://www.eenadu.net", NewsScraper("https://www.eenadu.net")
+teluguUrl, teluguScraper = "https://www.sakshi.com/", NewsScraper("https://www.sakshi.com/")
 
 title = scraper.getTitle()
 
