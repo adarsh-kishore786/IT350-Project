@@ -2,3 +2,4 @@ venv
 Display/__pycache__
 Display/env
 Display/.env
+tweets.csv
