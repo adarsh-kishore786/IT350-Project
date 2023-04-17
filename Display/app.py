@@ -60,8 +60,9 @@ print(sentiment)
 hindi_base_url = "https://www.aajtak.in"
 kaanda_base_url = "https://www.kannadaprabha.com"
 telugu_base_url = "https://www.sakshi.com/"
+tamil_base_url = "https://www.dinamalar.com"
 
-base_urls = { "hindi": hindi_base_url, "kannada": kaanda_base_url, "telugu": telugu_base_url}
+base_urls = { "hindi": hindi_base_url, "kannada": kaanda_base_url, "telugu": telugu_base_url, "tamil": tamil_base_url}
 
 # Setting Flask routes
 def get_comments(url):
@@ -88,6 +89,8 @@ def read_headlines(lang):
         headlines = db.hindi.find_one({})["headlines"]
     elif lang == "kannada":
         headlines = db.kannada.find_one({})["headlines"]
+    elif lang == "tamil":
+        headlines = db.tamil.find_one({})["headlines"]
     else:
         headlines = db.telugu.find_one({})["headlines"]
         
@@ -99,6 +102,8 @@ def get_json_data(lang:str):
         urls = db.hindi_news.find_one({})["urls"]
     elif lang == "kannada":
         urls = db.kannada_news.find_one({})["urls"]
+    elif lang == "tamil":
+        urls = db.tamil_news.find_one({})["urls"]
     else:
         urls = db.telugu_news.find_one({})["urls"]
         
@@ -112,14 +117,15 @@ def add_headlines():
     hindiScraper = NewsScraper(base_urls["hindi"])
     kannadaScraper = NewsScraper(base_urls["kannada"])
     teluguScraper = NewsScraper(base_urls["telugu"])
-
+    tamilScraper = NewsScraper(base_urls["tamil"])
     hindiHeadlines = hindiScraper.getHeadingsWithLinks()
     kannadaHeadlines = kannadaScraper.getHeadingsWithLinks()
     teluguHeadlines = teluguScraper.getHeadingsWithLinks()
-    
+    tamilHeadlines = tamilScraper.getHeadingsWithLinks()
     db.hindi.insert_one({"headlines": hindiHeadlines})
     db.kannada.insert_one({"headlines": kannadaHeadlines})
     db.telugu.insert_one({"headlines": teluguHeadlines})
+    db.tamil.insert_one({"headlines": tamilHeadlines})
     return jsonify(message="success")
 
 @app.route("/add_news", methods=['GET'])
@@ -127,11 +133,11 @@ def add_news():
     hindi_urls = []
     kannada_urls = []
     telugu_urls = []
-    
+    tamil_urls = []
     db.hindi_news.insert_one({"urls": hindi_urls})
     db.kannada_news.insert_one({"urls": kannada_urls})
     db.telugu_news.insert_one({"urls": telugu_urls})
-    
+    db.tamil_news.insert_one({"urls": tamil_urls})
     return jsonify(message="success")
 
 @app.route("/add_comments",methods=['GET'])
