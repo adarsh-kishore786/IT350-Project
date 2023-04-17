@@ -39,7 +39,7 @@ def get_kannanda_content(json_data, soup):
   content = content[description_index:article_index]
   # json_data["content"] = content
   sentenceList = sent_tokenize(content)
-  print(sentenceList[0])
+  # print(sentenceList[0])
   eng_inp = ""
   for sentence in sentenceList:
     kannada_text = transliterate(sentence, sanscript.ITRANS, sanscript.KANNADA)
@@ -55,6 +55,27 @@ def get_kannanda_content(json_data, soup):
 
   return json_data
 
+def get_telugu_content(json_data, soup):
+  content = soup.find_all("div", {"class": "field"})[1].text
+  content = re.sub(r"\n+", "\n", content)
+  content = re.sub(" +", " ", content)
+  # json_data["content"] = content
+  # return json_data
+  sentenceList = sent_tokenize(content)
+  eng_inp = ""
+  # print(sentenceList)
+  for sentence in sentenceList:
+     telugu_text = transliterate(sentence, sanscript.ITRANS, sanscript.TELUGU)
+     sent_eng = GoogleTranslator(source='auto', target='en').translate(telugu_text)
+    #  print(sent_eng)
+     eng_inp+=sent_eng
+  eng_summary = get_summary(eng_inp, 0.1)
+
+  telugu_summary = GoogleTranslator(source='auto', target='te').translate(eng_summary)
+  json_data["summary"] = telugu_summary
+
+  return json_data
+
 def get_json(url, lang):
   data = urlopen(url).read().decode()
   soup = BeautifulSoup(data, 'html.parser')
@@ -67,6 +88,8 @@ def get_json(url, lang):
     json_data = get_hindi_content(json_data, soup)
   if lang == "kannada":
     json_data = get_kannanda_content(json_data, soup)
+  if lang == "telugu":
+    json_data = get_telugu_content(json_data, soup)
     
   return json_data
 
