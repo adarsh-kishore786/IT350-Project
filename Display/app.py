@@ -133,7 +133,10 @@ def add_news():
     hindi_urls = []
     kannada_urls = []
     telugu_urls = []
-    tamil_urls = []
+    tamil_urls = [
+        "/news_detail.asp?id=3296425",
+        "/news_detail.asp?id=3296400"
+    ]
     db.hindi_news.insert_one({"urls": hindi_urls})
     db.kannada_news.insert_one({"urls": kannada_urls})
     db.telugu_news.insert_one({"urls": telugu_urls})
