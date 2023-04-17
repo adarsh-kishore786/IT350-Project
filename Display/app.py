@@ -42,7 +42,6 @@ for text in trans:
   translated_text = GoogleTranslator(source='auto', target='en').translate(hindi_text)
   english.append(translated_text)
 
-from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 analyzer = SentimentIntensityAnalyzer()
 
 eng = [i for i in english if i is not None]
@@ -58,19 +57,11 @@ for comment in eng:
 
 print(sentiment)
 
-
 hindi_base_url = "https://www.aajtak.in"
 kaanda_base_url = "https://www.kannadaprabha.com"
 telugu_base_url = "https://www.sakshi.com/"
 
 base_urls = { "hindi": hindi_base_url, "kannada": kaanda_base_url, "telugu": telugu_base_url}
-
-hindi_urls = db.hindi_news.find_one({})["urls"]
-kannada_urls = db.kannada_news.find_one({})["urls"]
-telugu_urls = db.telugu_news.find_one({})["urls"]
-
-urls = { "hindi": hindi_urls, "kannada": kannada_urls, "telugu": telugu_urls }
-
 
 # Setting Flask routes
 def get_comments(url):
@@ -93,14 +84,26 @@ def index():
 
 @app.route("/<lang>/headlines", methods=['GET'])
 def read_headlines(lang):
-    scraper = NewsScraper(base_urls[lang])
-    headlines = scraper.getHeadingsWithLinks()
+    if lang == "hindi":
+        headlines = db.hindi.find_one({})["headlines"]
+    elif lang == "kannada":
+        headlines = db.kannada.find_one({})["headlines"]
+    else:
+        headlines = db.telugu.find_one({})["headlines"]
+        
     return jsonify(headlines) 
 
 @app.route('/<lang>/news', methods=['GET'])
 def get_json_data(lang:str):
+    if lang == "hindi":
+        urls = db.hindi_news.find_one({})["urls"]
+    elif lang == "kannada":
+        urls = db.kannada_news.find_one({})["urls"]
+    else:
+        urls = db.telugu_news.find_one({})["urls"]
+        
     data = []
-    for url in urls[lang]:
+    for url in urls:
         data.append(get_json(base_urls[lang] + url, lang))
     return data
 
@@ -114,16 +117,21 @@ def add_headlines():
     kannadaHeadlines = kannadaScraper.getHeadingsWithLinks()
     teluguHeadlines = teluguScraper.getHeadingsWithLinks()
     
-    db.hindi.insert_one({today.strftime('%m/%d/%Y'): hindiHeadlines})
-    db.kannada.insert_one({today.strftime('%m/%d/%Y'): kannadaHeadlines})
-    db.telugu.insert_one({today.strftime('%m/%d/%Y'): teluguHeadlines})
+    db.hindi.insert_one({"headlines": hindiHeadlines})
+    db.kannada.insert_one({"headlines": kannadaHeadlines})
+    db.telugu.insert_one({"headlines": teluguHeadlines})
     return jsonify(message="success")
 
 @app.route("/add_news", methods=['GET'])
 def add_news():
+    hindi_urls = []
+    kannada_urls = []
+    telugu_urls = []
+    
     db.hindi_news.insert_one({"urls": hindi_urls})
     db.kannada_news.insert_one({"urls": kannada_urls})
     db.telugu_news.insert_one({"urls": telugu_urls})
+    
     return jsonify(message="success")
 
 @app.route("/add_comments",methods=['GET'])
@@ -131,7 +139,6 @@ def add_comments():
     hindi_comments = []
     hindi_com = get_comments("p/Cqzy-IOrTyD")
     for c in hindi_com:
-        # print(vars(c)["text"])
         hindi_comments.append(vars(c)["text"])
     
     db.hindi_comments.insert_one({"comments": hindi_comments})
