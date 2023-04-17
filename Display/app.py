@@ -1,24 +1,17 @@
-import json
 import os
 from instagrapi import Client
-from flask import Flask, jsonify,render_template,url_for, request, make_response
-# import connexion
+from flask import Flask, jsonify,render_template
 from flask_pymongo import pymongo
-from pymongo import MongoClient
 from utility import NewsScraper
 from get_json import get_json
 from datetime import date
 from dotenv import load_dotenv
-import pandas as pd
-import nltk
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from indic_transliteration import sanscript
-# from textblob import TextBlob
 from deep_translator import GoogleTranslator
 from indic_transliteration import sanscript
 from indic_transliteration.sanscript import transliterate
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
-
 
 load_dotenv()
 
@@ -27,10 +20,6 @@ MONGO_URI = os.environ.get('MONGO_URI')
 client = pymongo.MongoClient(MONGO_URI)
 app.config['MONGO_URI'] = MONGO_URI
 db = client.get_database("Newsdata")
-
-hindi = pymongo.collection.Collection(db,"hindi")
-kannada = pymongo.collection.Collection(db,"kannada")
-telugu = pymongo.collection.Collection(db,"telugu")
 
 today = date.today()
 # current_time = datetime.datetime.now()
@@ -76,54 +65,14 @@ telugu_base_url = "https://www.sakshi.com/"
 
 base_urls = { "hindi": hindi_base_url, "kannada": kaanda_base_url, "telugu": telugu_base_url}
 
-hindi_urls = \
-    [
-        "/elections/karnataka-assembly-election-2023/story/karnataka-election-bjp-candidate-ex-bbmp-commissioner-anil-kumar-koratagere-constituency-ntc-1673020-2023-04-12",
-        "/elections/karnataka-assembly-election-2023/story/karnataka-election-ks-eshwarappa-quit-election-politics-bjp-ntc-1672461-2023-04-11"
-    ]
-    
-kannada_urls = \
-    [
-        "/nation/2023/apr/12/fir-against-union-minister-arjun-munda-and-40-others-over-protest-in-ranchi-491543.html",
-        "/nation/2023/apr/12/chinese-buildup-close-to-doklam-plateau-a-grave-security-threat-congress-491552.html"
-    ]
-telugu_urls = \
-    [
-        "/telugu-news/sports/jos-buttler-met-his-lucky-fan-intresting-conversation-viral-gt-vs-rr-1587163",
-        "/telugu-news/andhra-pradesh/ys-avinash-reddy-key-comments-over-bhaskar-reddy-arrest-1587119"
-    ]
+hindi_urls = db.hindi_news.find_one({})["urls"]
+kannada_urls = db.kannada_news.find_one({})["urls"]
+telugu_urls = db.telugu_news.find_one({})["urls"]
 
 urls = { "hindi": hindi_urls, "kannada": kannada_urls, "telugu": telugu_urls }
 
 
 # Setting Flask routes
-@app.route("/add_news",methods=['POST','GET'])
-def add_news():
-    hindiScraper = NewsScraper(base_urls["hindi"])
-    kannadaScraper = NewsScraper(base_urls["kannada"])
-    teluguScraper = NewsScraper(base_urls["telugu"])
-
-    hindiHeadlines = hindiScraper.getHeadingsWithLinks()
-    kannadaHeadlines = kannadaScraper.getHeadingsWithLinks()
-    teluguHeadlines = teluguScraper.getHeadingsWithLinks()
-    if request.method == 'GET':
-        db.hindi.insert_one({today.strftime('%m/%d/%Y'): hindiHeadlines})
-        db.kannada.insert_one({today.strftime('%m/%d/%Y'): kannadaHeadlines})
-        db.telugu.insert_one({today.strftime('%m/%d/%Y'): teluguHeadlines})
-        return jsonify(message="success")
-
-@app.route("/add_comments",methods=['POST','GET'])
-def add_comments():
-    hindi_comments = []
-    hindi_com = get_comments("p/Cqzy-IOrTyD")
-    for c in hindi_com:
-        # print(vars(c)["text"])
-        hindi_comments.append(vars(c)["text"])
-    if request.method == 'GET':
-        db.hindi_comments.insert_one({"comments": hindi_comments})
-        return jsonify(message="success")
-
-
 def get_comments(url):
   load_dotenv()
   baseUrl = "https://www.instagram.com/"
@@ -154,6 +103,39 @@ def get_json_data(lang:str):
     for url in urls[lang]:
         data.append(get_json(base_urls[lang] + url, lang))
     return data
+
+@app.route("/add_headlines",methods=['GET'])
+def add_headlines():
+    hindiScraper = NewsScraper(base_urls["hindi"])
+    kannadaScraper = NewsScraper(base_urls["kannada"])
+    teluguScraper = NewsScraper(base_urls["telugu"])
+
+    hindiHeadlines = hindiScraper.getHeadingsWithLinks()
+    kannadaHeadlines = kannadaScraper.getHeadingsWithLinks()
+    teluguHeadlines = teluguScraper.getHeadingsWithLinks()
+    
+    db.hindi.insert_one({today.strftime('%m/%d/%Y'): hindiHeadlines})
+    db.kannada.insert_one({today.strftime('%m/%d/%Y'): kannadaHeadlines})
+    db.telugu.insert_one({today.strftime('%m/%d/%Y'): teluguHeadlines})
+    return jsonify(message="success")
+
+@app.route("/add_news", methods=['GET'])
+def add_news():
+    db.hindi_news.insert_one({"urls": hindi_urls})
+    db.kannada_news.insert_one({"urls": kannada_urls})
+    db.telugu_news.insert_one({"urls": telugu_urls})
+    return jsonify(message="success")
+
+@app.route("/add_comments",methods=['GET'])
+def add_comments():
+    hindi_comments = []
+    hindi_com = get_comments("p/Cqzy-IOrTyD")
+    for c in hindi_com:
+        # print(vars(c)["text"])
+        hindi_comments.append(vars(c)["text"])
+    
+    db.hindi_comments.insert_one({"comments": hindi_comments})
+    return jsonify(message="success")
 
 if __name__ == "__main__":
     app.run(debug=True)
