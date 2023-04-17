@@ -1,22 +1,58 @@
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
+from deep_translator import GoogleTranslator
 import json
 import re 
+from nltk import sent_tokenize
+from indic_transliteration import sanscript
+from indic_transliteration.sanscript import transliterate
+from summary import get_summary
+import os
 
 def get_hindi_content(json_data, soup):
   content = soup.find("div", {"class": "content-area"}).text
   content = re.sub(r"\n+", "\n", content)
   content = re.sub(" +", " ", content)
-  json_data["content"] = content
+  # json_data["content"] = content
+  sentenceList = sent_tokenize(content)
+  eng_inp = ""
+  # print(sentenceList)
+  for sentence in sentenceList:
+     hindi_text = transliterate(sentence, sanscript.ITRANS, sanscript.DEVANAGARI)
+     sent_eng = GoogleTranslator(source='auto', target='en').translate(hindi_text)
+    #  print(sent_eng)
+     eng_inp+=sent_eng
+  eng_summary = get_summary(eng_inp, 0.1)
+
+
+  print(eng_summary)
+  hindi_summary = GoogleTranslator(source='auto', target='hi').translate(eng_summary)
+  json_data["summary"] = hindi_summary
+
   return json_data
 
 def get_kannanda_content(json_data, soup):
   content = soup.find("script", {"type": "application/ld+json"}).text 
-  description_index = content.index("description") + len(r"description\":\"")
-  article_index = content.index("articleBody")
+  description_index = content.index("articleBody") + len(r"articleBody\":\"")
+  article_index = content.index("articleSection")
   
   content = content[description_index:article_index]
-  json_data["content"] = content
+  # json_data["content"] = content
+  sentenceList = sent_tokenize(content)
+  print(sentenceList[0])
+  eng_inp = ""
+  for sentence in sentenceList:
+    kannada_text = transliterate(sentence, sanscript.ITRANS, sanscript.KANNADA)
+    sent_eng = GoogleTranslator(source='auto', target='en').translate(kannada_text)
+    if sent_eng == None:
+      continue
+    # print(sent_eng)
+    eng_inp+=sent_eng
+  eng_summary = get_summary(eng_inp, 0.2)
+
+  kannada_summary = GoogleTranslator(source='auto', target='kn').translate(eng_summary)
+  json_data["summary"] = kannada_summary
+
   return json_data
 
 def get_json(url, lang):
