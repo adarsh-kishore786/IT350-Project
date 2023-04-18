@@ -12,6 +12,8 @@ from deep_translator import GoogleTranslator
 from indic_transliteration import sanscript
 from indic_transliteration.sanscript import transliterate
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+from matplotlib import pyplot as plt
+import numpy as np
 
 load_dotenv()
 
@@ -19,7 +21,8 @@ app = Flask(__name__)
 MONGO_URI = os.environ.get('MONGO_URI')
 client = pymongo.MongoClient(MONGO_URI)
 app.config['MONGO_URI'] = MONGO_URI
-db = client.get_database("Newsdata")
+# db = client.get_database("Newsdata")
+db = 2
 
 today = date.today()
 # current_time = datetime.datetime.now()
@@ -28,34 +31,65 @@ today = date.today()
 trans = []
 date = '04/11/2023'
 
-hindi_comments = db.hindi_comments.find_one({})["comments"]
-for com in hindi_comments:
-    trans.append(com)
+# @app.route("/sentiment",methods=['GET'])
+def plot_hindi():
+    # trans = ["हद्द है यार , अब सब काम भी प्रधानमंत्री जी को करना पड रहा है... सरकारी तंत्र क्या कर रहा है। 😀 😂","🙏🏻","Pm Desh chala rahe hai ki jangal me nokari pa Gaye hai jai bhim jai sambidhan","😂😂 animal Jan sankhya kaanon bnao 😂 q badh rhi population cantrol karne bolo 😂","@kuldeepyuvraj berozgari bhukhmari ginna nahin aata Q ki anpad h 😂modi😂😂😂","Media ka to blo mt Pakistan or afghanistan se bhi gya guzra hua hai","Bhukmari me top pe","Sarso tel k blo","Diesel k blo","Petrol k daam blo","Gas k daam blo","अरे अंदभगत बेरोजगारी की संख्या पर भी ध्यान दे ले चुतिया 😂","ये तो ठीक है पर ये बाघों के फोटो की जगह मोदी जी क्यू लगा रखा बाघों की संख्या बड़ी ना","Sir aap Yogi ji ko gin na bhul gaye sayad😂😂😂","आप अपनी डिग्री दिखावे बस","Ab Insan ki kimat janvaron se kam ho gai isliye rojgar per Dhyan Nahin dete","Rojgar per Dhyan Nahin janvaron ko per Dhyan dete Ho","Andhbhakto me bhi teji ankde badte ja rahe  h Modiji","Entire political science 😂😂😂","Farzi degree"]
+    hindi_comments = db.hindi_comments.find_one({})["comments"]
+    for com in hindi_comments:
+        trans.append(com)
+    hindi_text = []
+    senti = []
+    english = []
+    sentiment = []
 
-hindi_text = []
-senti = []
-english = []
-sentiment = []
+    for text in trans:
+        hindi_text = transliterate(text, sanscript.ITRANS, sanscript.DEVANAGARI)
+        translated_text = GoogleTranslator(source='auto', target='en').translate(hindi_text)
+        english.append(translated_text)
 
-for text in trans:
-  hindi_text = transliterate(text, sanscript.ITRANS, sanscript.DEVANAGARI)
-  translated_text = GoogleTranslator(source='auto', target='en').translate(hindi_text)
-  english.append(translated_text)
+    analyzer = SentimentIntensityAnalyzer()
 
-analyzer = SentimentIntensityAnalyzer()
+    eng = [i for i in english if i is not None]
 
-eng = [i for i in english if i is not None]
+    for comment in eng:
+        sentiment_dict = analyzer.polarity_scores(comment)
+        if sentiment_dict['compound']<0:
+            sentiment.append("Negative")
+        elif sentiment_dict['compound']>0:
+            sentiment.append("Positive")
+        else:
+            sentiment.append("Neutral")
 
-for comment in eng:
-  sentiment_dict = analyzer.polarity_scores(comment)
-  if sentiment_dict['compound']<0:
-    sentiment.append("Negative")
-  elif sentiment_dict['compound']>0:
-    sentiment.append("Positive")
-  else:
-    sentiment.append("Neutral")
+        print(sentiment)
 
-print(sentiment)
+    sentiment = ['Positive', 'Neutral', 'Negative']
+    freq = CountFrequency(sentiment)
+    pos = 0
+    neu = 0
+    neg = 0
+    for key, value in freq.items():
+        if key == 'Positive':
+            pos = pos+1
+        elif key == 'Negative':
+            neg = neg+1
+        else:
+            neu = neu+1
+
+    count = [pos, neu, neg]
+
+    fig = plt.figure(figsize =(10, 7))
+    plt.pie(count, labels = sentiment)
+    plt.show()
+
+
+def CountFrequency(my_list):
+    freq = {}
+    for item in my_list:
+        if (item in freq):
+            freq[item] += 1
+        else:
+            freq[item] = 1
+    return freq
 
 hindi_base_url = "https://www.aajtak.in"
 kaanda_base_url = "https://www.kannadaprabha.com"
@@ -155,3 +189,4 @@ def add_comments():
 
 if __name__ == "__main__":
     app.run(debug=True)
+    plot_hindi()
